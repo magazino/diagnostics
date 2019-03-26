@@ -71,7 +71,7 @@ class LogExporter:
     ##\brief Return filename of output
     ##\param name str : DiagnosticStatus name ex: 'Mechanism Control'
     def get_filename(self, name):
-        if not self._stats.has_key(name):
+        if name not in self._stats:
             return None # self.output_dir + '/%s.csv' % name.replace(' ', '_')
         return self._stats[name]['file_name']
 
@@ -84,7 +84,7 @@ class LogExporter:
     ##\brief Creates and updates data files with new messages
     def _update(self, topic, msg):
         if (not (topic == '/diagnostics')):
-            print "Discarding message on topic: %s" % topic
+            print("Discarding message on topic: %s" % topic)
             return
         
         t = time.localtime(float(str(msg.header.stamp)) / 1000000000.0)
@@ -92,7 +92,7 @@ class LogExporter:
         for status in msg.status:
             name = status.name
 
-            if (not self._stats.has_key(name)):
+            if name not in self._stats:
                 self._stats[name] = {}
                 
                 fields = {}
@@ -114,14 +114,14 @@ class LogExporter:
             # Check to see if fields have changed. Add new fields to map
             if (not [s.key for s in status.values] == self._stats[name]['fields'].keys()):
                 for s in status.values:
-                    if not self._stats[name]['fields'].has_key(s.key):
+                    if s.key not in self._stats[name]['fields']:
                         self._stats[name]['fields'][s.key] = len(self._stats[name]['fields'])
 
             # Add values in correct place for header index
             # Key/Value pairs can move around, this makes sure values are 
             # added to correct keys
             vals = []
-            for key, val in self._stats[name]['fields'].iteritems():
+            for key, val in self._stats[name]['fields'].items():
                 vals.append('')
             for s in status.values:
                 vals[self._stats[name]['fields'][s.key]] = s.value.replace('\n','  ').replace(',',' ')
@@ -136,7 +136,7 @@ class LogExporter:
     def finish_logfile(self):
         for name in self._stats:
             # Sort fields by correct index, add to header
-            field_dict = sorted(self._stats[name]['fields'].iteritems(), key=operator.itemgetter(1))
+            field_dict = sorted(self._stats[name]['fields'].items(), key=operator.itemgetter(1))
             fields = map(operator.itemgetter(0), field_dict)
             
             header_line = ','.join(['Timestamp'] + ['Level', 'Message', 'Hardware ID'] + 
@@ -144,7 +144,7 @@ class LogExporter:
             
             file_name = os.path.join(self.output_dir, name.replace(' ', '_').replace('(', '').replace(')', '').replace('/', '__').replace('.', '').replace('#', '') + '.csv')
             
-            output_file = file(file_name, 'w')
+            output_file = open(file_name, 'w')
             output_file.write(header_line)
             output_file.close()
 

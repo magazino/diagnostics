@@ -50,8 +50,8 @@ def ntp_diag(st, host, off, error_offset):
         p = Popen(["ntpdate", "-q", host], stdout=PIPE, stdin=PIPE, stderr=PIPE)
         res = p.wait()
         (o,e) = p.communicate()
-    except OSError, (errno, msg):
-        if errno == 4:
+    except OSError as err:
+        if err.errno == 4:
             return None #ctrl-c interrupt
         else:
             raise

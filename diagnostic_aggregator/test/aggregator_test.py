@@ -83,10 +83,10 @@ def _get_params_list(params):
 
 def name_to_full_generic(name, my_prefix, value, header=False):
     remove_prefixes = []
-    if value.has_key('remove_prefix'):
+    if 'remove_prefix' in value:
         remove_prefixes = _get_params_list(value['remove_prefix'])
 
-    if value.has_key('find_and_remove_prefix'):
+    if 'find_and_remove_prefix' in value:
         for rp in _get_params_list(value['find_and_remove_prefix']):
             remove_prefixes.extend(_get_params_list(value['find_and_remove_prefix']))
         for sw in _get_params_list(value['find_and_remove_prefix']):
@@ -95,28 +95,28 @@ def name_to_full_generic(name, my_prefix, value, header=False):
                     return header_name(my_prefix)
                 return combine_name_prefix(my_prefix, name, remove_prefixes)
 
-    if value.has_key('startswith'):
+    if 'startswith' in value:
         for sw in _get_params_list(value['startswith']):
             if name.startswith(sw):
                 if header:
                     return header_name(my_prefix)
                 return combine_name_prefix(my_prefix, name, remove_prefixes)
 
-    if value.has_key('contains'):
+    if 'contains' in value:
         for con in _get_params_list(value['contains']):
             if name.find(con) >= 0:
                 if header:
                     return header_name(my_prefix)
                 return combine_name_prefix(my_prefix, name, remove_prefixes)
 
-    if value.has_key('name'):
+    if 'name' in value:
         for nm in _get_params_list(value['name']):
             if name == nm:
                 if header:
                     return header_name(my_prefix)
                 return combine_name_prefix(my_prefix, name, remove_prefixes)
 
-    if value.has_key('expected'):
+    if 'expected' in value:
         for nm in _get_params_list(value['expected']):
             if name == nm:
                 if header:
@@ -128,7 +128,7 @@ def name_to_full_generic(name, my_prefix, value, header=False):
 
 def name_to_agg_name(name, params):
     for key, value in params.iteritems():
-        if not value.has_key('path') or not value.has_key('type'):
+        if 'path' not in value or 'type' not in value:
             return None
         my_prefix = value['path']
         if value['type'] == 'GenericAnalyzer' or value['type'] == 'diagnostic_aggregator/GenericAnalyzer':
@@ -144,7 +144,7 @@ def name_to_agg_name(name, params):
 # Returns header name for particular item
 def name_to_agg_header(name, params):
     for key, value in params.iteritems():
-        if not value.has_key('path') or not value.has_key('type'):
+        if 'path' not in value or 'type' not in value:
             return None
         my_prefix = value['path']
         if value['type'] == 'GenericAnalyzer' or value['type'] == 'diagnostic_aggregator/GenericAnalyzer':
@@ -220,7 +220,7 @@ class TestAggregator(unittest.TestCase):
                 agg_name = name_to_agg_name(name, self.params)
                 
                 self.assert_(agg_name is not None, 'Aggregated name is None for %s' % name)
-                self.assert_(self.agg_msgs.has_key(agg_name), 'No matching name found for name: %s, aggregated name: %s' % (name, agg_name))
+                self.assert_(agg_name in self.agg_msgs, 'No matching name found for name: %s, aggregated name: %s' % (name, agg_name))
                 self.assert_(msg.level == self.agg_msgs[agg_name].level, 'Status level of original, aggregated messages doesn\'t match. Name: %s, aggregated name: %s.' % (name, agg_name))
                 self.assert_(msg.message == self.agg_msgs[agg_name].message, 'Status message of original, aggregated messages doesn\'t match. Name: %s, aggregated name: %s' % (name, agg_name))
                 
@@ -230,7 +230,7 @@ class TestAggregator(unittest.TestCase):
                     self.agg_msgs[agg_name].level = -1
             
                 header = name_to_agg_header(name, self.params)
-                if all_headers.has_key(header):
+                if header in all_headers:
                     all_headers[header] = max(all_headers[header], self.agg_msgs[agg_name].level)
                 else:
                     all_headers[header] = self.agg_msgs[agg_name].level
@@ -243,7 +243,7 @@ class TestAggregator(unittest.TestCase):
                 if lvl == -1: 
                     lvl = 3
 
-                self.assert_(self.agg_msgs.has_key(header), "Header %s not found in messages" % header)
+                self.assert_(header in self.agg_msgs, "Header %s not found in messages" % header)
                 self.assert_(self.agg_msgs[header].level == lvl, "Level of header %s doesn't match expected value." % header)
                 del self.agg_msgs[header]
 
@@ -251,12 +251,12 @@ class TestAggregator(unittest.TestCase):
             if len(prefix) > 0:
                 self.assert_(len(self.agg_msgs) == 1, "Incorrect number of messages remaining: %d. Messages: %s" % (len(self.agg_msgs), str(self.agg_msgs)))
                 
-                self.assert_(self.agg_msgs.has_key(prefix), "Global prefix not found in messages: %s. Messages: %s" % (prefix, str(self.agg_msgs)))
+                self.assert_(prefix in self.agg_msgs, "Global prefix not found in messages: %s. Messages: %s" % (prefix, str(self.agg_msgs)))
             else:
                 self.assert_(len(self.agg_msgs) == 0, "Incorrect number of messages remaining: %d. Messages: %s. Expected 0." % (len(self.agg_msgs), str(self.agg_msgs)))
                 
 
 
 if __name__ == '__main__':
-    print 'SYS ARGS:', sys.argv
+    print('SYS ARGS:', sys.argv)
     rostest.run(PKG, sys.argv[0], TestAggregator, sys.argv)

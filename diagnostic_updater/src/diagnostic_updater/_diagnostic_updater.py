@@ -37,7 +37,11 @@
 """
 
 import rospy
-import threading, httplib
+import threading
+try:
+    import httplib
+except ImportError:
+    import http.client as httplib
 from diagnostic_msgs.msg import DiagnosticArray
 
 from ._diagnostic_status_wrapper import *
