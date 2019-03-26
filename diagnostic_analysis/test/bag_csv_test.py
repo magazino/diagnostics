@@ -97,7 +97,7 @@ class TestBagToCSV(unittest.TestCase):
     ##\brief Test that CSV file has correct data, number of lines
     def test_export(self):
         # Read CSV, count rows
-        input_reader = csv.reader(open(self.filename, 'rb'))
+        input_reader = csv.reader(open(self.filename, 'r'))
         count = -1
         for row in input_reader:
             if count == -1:
